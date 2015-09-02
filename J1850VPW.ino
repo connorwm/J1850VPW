@@ -20,7 +20,9 @@ Released under GNU/GPL v3:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-const int IOPin = 8; 
+const int PIN_OUT = 8; 
+const int PIN_IN = 9;
+
 String msg = "";
 boolean isValid = false;
 
@@ -28,6 +30,9 @@ void setup()
 {
     Serial.begin(9600);
     Serial.println("Started");
+
+    pinMode(PIN_OUT, OUTPUT);
+    pinMode(PIN_IN, INPUT);
 }
 
 /*
@@ -108,8 +113,7 @@ void loop()
     // are expecting a response from the vehicle. 
     if(isValid)
     {
-        digitalWrite(IOPin, LOW);
-        pinMode(IOPin, INPUT);
+        digitalWrite(PIN_OUT, LOW);
         
         boolean reachedEOF = false;
         boolean receivedResponse = false;
@@ -122,11 +126,11 @@ void loop()
         
         while(!receivedResponse)
         {
-            if(digitalRead(IOPin) == HIGH && responseStart == 0L)
+            if(digitalRead(PIN_IN) == HIGH && responseStart == 0L)
             {
                 responseStart = millis();
             }
-            if(digitalRead(IOPin) == LOW && responseStart > 0L)
+            if(digitalRead(PIN_IN) == LOW && responseStart > 0L)
             {
                 long difference = abs(millis()-responseStart);
             
@@ -141,7 +145,7 @@ void loop()
         
         while(!reachedEOF)
         {
-            currentBitVoltage = digitalRead(IOPin);
+            currentBitVoltage = digitalRead(PIN_IN);
             
             if(currentBitVoltage != expectedBitVoltage)
             {
@@ -168,12 +172,12 @@ void loop()
                     if(expectedBitVoltage > 0)
                     {
                         response += "0";    
-                        Serial.println("0");
+                        //Serial.println("0");
                     }
                     else
                     {
                         response += "1";    
-                        Serial.println("1");
+                        //Serial.println("1");
                     }
                 }
                 else if(abs(64 - difference) < abs(128 - difference) && abs(64 - difference) < abs(200 - difference))
@@ -185,12 +189,12 @@ void loop()
                     if(expectedBitVoltage > 0)
                     {
                         response += "1";    
-                        Serial.println("1");
+                        //Serial.println("1");
                     }
                     else
                     {
                         response += "0"; 
-                        Serial.println("0");
+                        //Serial.println("0");
                     }
                 }
                 else if(abs(200 - difference) < abs(128 - difference) && abs(200 - difference) < abs(64 - difference))
@@ -272,8 +276,6 @@ int sendPacket(int mode, int pid)
     }
     Serial.println();
     
-    pinMode(IOPin, OUTPUT);
-    
     sendSOD();
     
     int expectedVoltage = -1;
@@ -288,30 +290,30 @@ int sendPacket(int mode, int pid)
 
 void sendSOD()
 {
-    digitalWrite(IOPin, HIGH);
+    digitalWrite(PIN_OUT, HIGH);
     delayMicroseconds(200);   
-    digitalWrite(IOPin, LOW); 
+    digitalWrite(PIN_OUT, LOW); 
 }
 
 void sendEOF()
 {
-    digitalWrite(IOPin, HIGH);
+    digitalWrite(PIN_OUT, HIGH);
     delayMicroseconds(280);
-    digitalWrite(IOPin, LOW);
+    digitalWrite(PIN_OUT, LOW);
 }
 
 void sendEOD()
 {
-    digitalWrite(IOPin, LOW);
+    digitalWrite(PIN_OUT, LOW);
     delayMicroseconds(200);  
-    digitalWrite(IOPin, LOW);  
+    digitalWrite(PIN_OUT, LOW);  
 }
 
 void sendBit(int value, int expectedVoltage)
 {
     if(expectedVoltage == 1)
     {
-        digitalWrite(IOPin, HIGH);
+        digitalWrite(PIN_OUT, HIGH);
         
         if(value == 1)
         {
@@ -320,7 +322,7 @@ void sendBit(int value, int expectedVoltage)
             delayMicroseconds(128);
         }
     } else {
-        digitalWrite(IOPin, LOW);
+        digitalWrite(PIN_OUT, LOW);
         
         if(value == 1)
         {
